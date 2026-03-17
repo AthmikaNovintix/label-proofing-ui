@@ -34,7 +34,7 @@ const Index = () => {
             Dashboard
           </Link>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => window.location.href = window.location.pathname}
             className="bg-white text-primary px-4 py-1.5 font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors flex items-center gap-2 rounded-sm shadow-sm"
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -51,8 +51,8 @@ const Index = () => {
         {/* Upload Section */}
         <section>
           <div className="grid grid-cols-2 gap-4">
-            <Dropzone label="Upload Base Label (PDF / Image)" file={baseFile} onFileSelect={setBaseFile} />
-            <Dropzone label="Upload Child Label" file={childFile} onFileSelect={setChildFile} />
+            <Dropzone label="Upload Current Version Label (PDF / Image)" file={baseFile} onFileSelect={setBaseFile} />
+            <Dropzone label="Upload New Version Label" file={childFile} onFileSelect={setChildFile} />
           </div>
           <div className="mt-4 flex justify-center">
             <button

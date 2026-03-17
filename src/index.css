@@ -39,10 +39,10 @@
     --status-added-bg: 142 76% 96%;
     --status-deleted: 0 72% 51%;
     --status-deleted-bg: 0 86% 97%;
-    --status-modified: 38 92% 50%;
-    --status-modified-bg: 48 96% 96%;
-    --status-misplaced: 224 64% 33%;
-    --status-misplaced-bg: 214 95% 97%;
+    --status-modified: 224 64% 33%;
+    --status-modified-bg: 214 95% 97%;
+    --status-misplaced: 38 92% 50%;
+    --status-misplaced-bg: 48 96% 96%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

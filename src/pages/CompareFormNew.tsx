@@ -47,7 +47,7 @@ const CompareFormNew = () => {
             Dashboard
           </Link>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => window.location.href = window.location.pathname}
             className="bg-white text-primary px-4 py-1.5 font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors flex items-center gap-2 rounded-sm shadow-sm"
           >
             <RefreshCw className="h-3.5 w-3.5" />
