@@ -69,3 +69,18 @@ export const CATEGORIES: Record<CategoryId, CategoryDef> = {
 export const CATEGORY_ORDER: CategoryId[] = ["text", "symbol", "barcode", "image"];
 
 export const METADATA_FIELDS = data.form_meta.metadata_fields;
+
+const categoryDisplayName: Record<string, "Text" | "Symbol" | "Barcode" | "Image"> = {
+  text: "Text", symbol: "Symbol", barcode: "Barcode", image: "Image",
+};
+
+/** Flat lookup: attrId → { label, category } — used to resolve form change IDs in the report */
+export const ATTRIBUTE_LOOKUP: Record<string, { label: string; category: "Text" | "Symbol" | "Barcode" | "Image" }> =
+  CATEGORY_ORDER.reduce((acc, catId) => {
+    for (const group of CATEGORIES[catId].groups) {
+      for (const attr of group.attributes) {
+        acc[attr.id] = { label: attr.label, category: categoryDisplayName[catId] };
+      }
+    }
+    return acc;
+  }, {} as Record<string, { label: string; category: "Text" | "Symbol" | "Barcode" | "Image" }>);

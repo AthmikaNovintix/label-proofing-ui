@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ScanLine, Activity, RefreshCw, ArrowLeft } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { ScanLine, RefreshCw, ArrowLeft } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Dropzone from "@/components/Dropzone";
 import VisualDiffViewer from "@/components/VisualDiffViewer";
 import DataTables from "@/components/DataTables";
@@ -11,6 +11,7 @@ const Index = () => {
   const [analysisRun, setAnalysisRun] = useState(true); // true to show demo data
 
   const location = useLocation();
+  const navigate = useNavigate();
   const formData = location.state?.formData;
 
   return (
@@ -31,7 +32,7 @@ const Index = () => {
             className="bg-white text-primary px-4 py-1.5 font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors flex items-center gap-2 rounded-sm shadow-sm"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Dashboard
+            Home
           </Link>
           <button
             onClick={() => window.location.href = window.location.pathname}
@@ -40,10 +41,6 @@ const Index = () => {
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </button>
-          <div className="flex items-center gap-2 bg-black/10 px-3 py-1.5 rounded-sm">
-            <Activity className="h-3.5 w-3.5" />
-            <span>System Operational</span>
-          </div>
         </div>
       </header>
 
@@ -59,7 +56,7 @@ const Index = () => {
               onClick={() => setAnalysisRun(true)}
               className="bg-primary text-primary-foreground px-6 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-primary/90 transition-colors"
             >
-              RUN COMPARATOR ANALYSIS
+              {formData ? "RUN PROOFING ANALYSIS" : "RUN COMPARATOR ANALYSIS"}
             </button>
           </div>
         </section>
@@ -79,7 +76,10 @@ const Index = () => {
             {/* Footer stamp */}
             <footer className="border-t border-border pt-4 pb-8 flex items-center justify-between text-xs text-muted-foreground font-mono">
               <span>Report generated: {new Date().toISOString().split("T")[0]}</span>
-              <button className="bg-[#D51900] text-white px-6 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#b01300] transition-colors rounded shadow-sm font-sans">
+              <button
+                onClick={() => navigate('/report', { state: { scenario: formData ? 'C' : 'A', formData } })}
+                className="bg-[#D51900] text-white px-6 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#b01300] transition-colors rounded shadow-sm font-sans"
+              >
                 Generate Report
               </button>
             </footer>

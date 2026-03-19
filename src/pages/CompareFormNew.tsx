@@ -1,16 +1,20 @@
-import { useLocation, Link } from "react-router-dom";
-import { ArrowLeft, ScanLine, Activity, RefreshCw, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
-import { FormValidationSummary } from "@/components/FormValidationSummary";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, ScanLine, RefreshCw, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { FormDataContextView } from "@/components/FormDataContextView";
+import { FormValidationSummary, FormValidationDetails } from "@/components/FormValidationSummary";
+import DiscrepancyDashboard from "@/components/DiscrepancyDashboard";
 import Dropzone from "@/components/Dropzone";
 import { useState, useRef, useCallback } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { PLACEHOLDER_LABEL_CHILD } from "@/components/VisualDiffViewer";
+import { dummyFormDataScene2 } from "@/data/dummyData";
 
 const CompareFormNew = () => {
   const location = useLocation();
-  const formData = location.state?.formData;
+  const formData = location.state?.formData ?? dummyFormDataScene2;
+  const navigate = useNavigate();
   const [childFile, setChildFile] = useState<File | null>(null);
+  const [analysisRun, setAnalysisRun] = useState(false);
 
   const imageRef = useRef<any>(null);
 
@@ -44,7 +48,7 @@ const CompareFormNew = () => {
             className="bg-white text-primary px-4 py-1.5 font-semibold uppercase tracking-wider hover:bg-gray-100 transition-colors flex items-center gap-2 rounded-sm shadow-sm"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Dashboard
+            Home
           </Link>
           <button
             onClick={() => window.location.href = window.location.pathname}
@@ -53,10 +57,6 @@ const CompareFormNew = () => {
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </button>
-          <div className="flex items-center gap-2 bg-black/10 px-3 py-1.5 rounded-sm">
-            <Activity className="h-3.5 w-3.5" />
-            <span>System Operational</span>
-          </div>
         </div>
       </header>
       
@@ -77,6 +77,7 @@ const CompareFormNew = () => {
             
             <div className="mb-6 flex justify-center">
               <button
+                onClick={() => setAnalysisRun(true)}
                 className="bg-[#D51900] text-white px-6 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#b01300] transition-colors rounded shadow-sm"
               >
                 RUN PROOFING ANALYSIS
@@ -123,15 +124,27 @@ const CompareFormNew = () => {
         </div>
       </div>
       
-      {/* Form Validation Summary */}
-      <div className="flex-1 p-8 bg-gray-50 border-t border-gray-200">
+      {/* Analysis Results */}
+      {analysisRun && (
+        <div className="p-8 bg-gray-50 border-t border-gray-200 space-y-6">
+          <h2 className="text-xl font-bold text-[#333333] border-b border-gray-200 pb-2">Analysis Results</h2>
+          <DiscrepancyDashboard formData={formData} />
+        </div>
+      )}
+
+      {/* Form Validation Summary + Details — always visible */}
+      <div className="px-8 pb-6 bg-gray-50 space-y-4">
         <FormValidationSummary />
+        <FormValidationDetails />
       </div>
 
       {/* Footer stamp */}
       <footer className="mt-auto border-t border-border px-8 pt-4 pb-8 flex items-center justify-between text-xs text-muted-foreground font-mono bg-white">
         <span>Report generated: {new Date().toISOString().split("T")[0]}</span>
-        <button className="bg-[#D51900] text-white px-6 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#b01300] transition-colors rounded shadow-sm font-sans">
+        <button
+          onClick={() => navigate('/report', { state: { scenario: 'B', formData } })}
+          className="bg-[#D51900] text-white px-6 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-[#b01300] transition-colors rounded shadow-sm font-sans"
+        >
           Generate Report
         </button>
       </footer>

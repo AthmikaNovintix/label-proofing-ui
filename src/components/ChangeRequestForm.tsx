@@ -4,6 +4,7 @@ import { ScanLine, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryId, AttributeDef, FormMetadata } from "@/types/form";
 import { CATEGORIES, CATEGORY_ORDER, METADATA_FIELDS } from "@/data/attributes";
+import { dummyFormDataScene2 } from "@/data/dummyData";
 import CategoryTabs from "./CategoryTabs";
 import AttributeGroup from "./AttributeGroup";
 import SummaryBar from "./SummaryBar";
@@ -38,8 +39,14 @@ const ChangeRequestForm = () => {
 
   useEffect(() => {
     const draft = localStorage.getItem(STORAGE_KEY);
-    if (draft) setShowDraftBanner(true);
-  }, []);
+    if (draft) {
+      setShowDraftBanner(true);
+    } else if (flow === 'to-split' || flow === 'to-compare') {
+      // Pre-populate with demo data so the context view has something to show
+      setMetadata(dummyFormDataScene2.metadata as FormMetadata);
+      setChanges(dummyFormDataScene2.changes as Record<string, ChangeData>);
+    }
+  }, [flow]);
 
   const restoreDraft = () => {
     try {

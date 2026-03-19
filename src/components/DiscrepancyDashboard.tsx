@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { type DiscrepancyItem, discrepancies } from "@/data/dummyData";
+import { type DiscrepancyItem, discrepancies, proofRequestMissingItems, type ProofRequestMissingItem } from "@/data/dummyData";
 import { FormDataContextView } from "@/components/FormDataContextView";
 
 // Define Form Data type structure inline for prop
@@ -64,14 +64,13 @@ function computeCounts(items: DiscrepancyItem[]) {
 const InspectionSummary = ({ items, formData }: { items: DiscrepancyItem[]; formData?: FormDataContext }) => {
   const { byStatus, byStatusAndCategory, total } = computeCounts(items);
 
-  // Mock data for Scenario 2 5th column
-  const missingCounts = {
-    Text: 2,
-    Symbol: 0,
-    Barcode: 1,
-    Image: 0,
-  };
-  const totalMissing = Object.values(missingCounts).reduce((a, b) => a + b, 0);
+  // Derived from proofRequestMissingItems data
+  const missingCounts = proofRequestMissingItems.reduce(
+    (acc, item) => { acc[item.category] = (acc[item.category] || 0) + 1; return acc; },
+    {} as Record<string, number>
+  );
+  const missingCountsByCat = { Text: missingCounts["Text"] || 0, Symbol: missingCounts["Symbol"] || 0, Barcode: missingCounts["Barcode"] || 0, Image: missingCounts["Image"] || 0 };
+  const totalMissing = proofRequestMissingItems.length;
 
   return (
     <div className="bg-card border border-border">
@@ -128,7 +127,7 @@ const InspectionSummary = ({ items, formData }: { items: DiscrepancyItem[]; form
             <div className="space-y-1">
               {(["Text", "Symbol", "Barcode", "Image"] as Category[]).map((cat) => {
                 const CatIcon = categoryIcons[cat];
-                const catCount = missingCounts[cat];
+                const catCount = missingCountsByCat[cat];
                 return (
                   <div key={`missing-${cat}`} className="flex items-center gap-2 text-sm">
                     <CatIcon className="h-4 w-4 text-[#D51900]/60 shrink-0" />
@@ -159,7 +158,7 @@ const DiffView = ({ oldText, newText }: { oldText: string; newText: string }) =>
 );
 
 // Single row
-const DiscrepancyRow = ({ item, status }: { item: DiscrepancyItem; status: Status }) => {
+const DiscrepancyRow = ({ item, status, showValidity }: { item: DiscrepancyItem; status: Status; showValidity?: boolean }) => {
   const config = statusConfig[status];
   const CatIcon = categoryIcons[item.category] || Type;
   const showDiff = status === "Modified" && item.oldText && item.newText;
@@ -168,8 +167,19 @@ const DiscrepancyRow = ({ item, status }: { item: DiscrepancyItem; status: Statu
     <div className={`border-l-2 ${config.borderClass} pl-3 pr-4 py-2`}>
       <div className="flex items-start gap-2.5">
         <CatIcon className={`h-3.5 w-3.5 mt-0.5 ${config.textClass} shrink-0`} />
-        <div className="min-w-0">
-          <span className="text-sm text-foreground">{item.value}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-sm text-foreground">{item.value}</span>
+            {showValidity && item.isValid !== undefined && (
+              <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                item.isValid
+                  ? "bg-green-50 text-green-700 border-green-300"
+                  : "bg-red-50 text-red-700 border-red-300"
+              }`}>
+                {item.isValid ? "Valid" : "Invalid"}
+              </span>
+            )}
+          </div>
           {showDiff && (
             <div>
               <DiffView oldText={item.oldText!} newText={item.newText!} />
@@ -181,8 +191,53 @@ const DiscrepancyRow = ({ item, status }: { item: DiscrepancyItem; status: Statu
   );
 };
 
+// Proof Request Missing group — changes expected by the form but not detected
+const ProofRequestMissingGroup = ({ items }: { items: ProofRequestMissingItem[] }) => {
+  const [open, setOpen] = useState(true);
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 py-1.5 hover:bg-[#fce8e6]/40 transition-colors"
+      >
+        {open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+        <X className="h-3.5 w-3.5 text-[#D51900]" />
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#D51900]">Proof Request Missing</span>
+        <span className="text-xs text-muted-foreground font-mono">({items.length})</span>
+      </button>
+      {open && (
+        <div className="ml-1 space-y-0.5 mt-0.5 mb-3">
+          {items.map((item) => {
+            const CatIcon = categoryIcons[item.category] || Type;
+            return (
+              <div key={item.id} className="border-l-2 border-[#D51900] pl-3 pr-4 py-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <CatIcon className="h-3.5 w-3.5 mt-0.5 text-[#D51900] shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-sm text-foreground">{item.label}</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-xs bg-[#fce8e6] text-[#D51900] px-1.5 py-0.5 rounded font-medium">{item.expectedChange}</span>
+                        <span className="font-mono text-xs text-muted-foreground">Expected: <span className="text-foreground">{item.expectedValue}</span></span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border bg-orange-50 text-orange-700 border-orange-300">
+                    Not Found
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Status group with collapse
-const StatusGroup = ({ status, items }: { status: Status; items: DiscrepancyItem[] }) => {
+const StatusGroup = ({ status, items, showValidity }: { status: Status; items: DiscrepancyItem[]; showValidity?: boolean }) => {
   const [open, setOpen] = useState(true);
   const config = statusConfig[status];
   const Icon = config.icon;
@@ -203,7 +258,7 @@ const StatusGroup = ({ status, items }: { status: Status; items: DiscrepancyItem
       {open && (
         <div className="ml-1 space-y-0.5 mt-0.5 mb-3">
           {items.map((item) => (
-            <DiscrepancyRow key={item.id} item={item} status={status} />
+            <DiscrepancyRow key={item.id} item={item} status={status} showValidity={showValidity} />
           ))}
         </div>
       )}
@@ -269,9 +324,14 @@ const DiscrepancyDashboard = ({ formData }: { formData?: FormDataContext }) => {
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspection Details</span>
         </div>
         <div className="px-4 py-3 divide-y divide-border">
+          {formData && (
+            <div className="py-2 first:pt-0">
+              <ProofRequestMissingGroup items={proofRequestMissingItems} />
+            </div>
+          )}
           {statusOrder.map((status) => (
-            <div key={status} className="py-2 first:pt-0 last:pb-0">
-              <StatusGroup status={status} items={grouped[status]} />
+            <div key={status} className="py-2 last:pb-0">
+              <StatusGroup status={status} items={grouped[status]} showValidity={!!formData} />
             </div>
           ))}
         </div>
