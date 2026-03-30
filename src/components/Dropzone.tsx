@@ -3,83 +3,129 @@ import { Upload, FileText, X } from "lucide-react";
 
 interface DropzoneProps {
   label: string;
-  file: File | null;
-  onFileSelect: (file: File | null) => void;
+  files: File[];
+  onFilesSelect: (files: File[]) => void;
+  multiple?: boolean;
 }
 
-const Dropzone = ({ label, file, onFileSelect }: DropzoneProps) => {
+const Dropzone = ({ label, files, onFilesSelect, multiple = false }: DropzoneProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragOver(false);
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile) onFileSelect(droppedFile);
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      if (droppedFiles.length > 0) {
+        if (multiple) {
+          onFilesSelect([...files, ...droppedFiles]);
+        } else {
+          onFilesSelect([droppedFiles[0]]);
+        }
+      }
     },
-    [onFileSelect]
+    [onFilesSelect, multiple, files]
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) onFileSelect(selected);
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) {
+      if (multiple) {
+        onFilesSelect([...files, ...selectedFiles]);
+      } else {
+        onFilesSelect([selectedFiles[0]]);
+      }
+    }
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    onFilesSelect(newFiles);
+  };
+
+  const clearFiles = () => {
+    onFilesSelect([]);
   };
 
   return (
-    <div className="flex-1 min-w-0">
-      <label className="block text-[11px] font-bold uppercase tracking-[0.1em] text-[#64748b] mb-3">
+    <div className="flex-1">
+      <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
         {label}
       </label>
-      {file ? (
-        <div className="border border-gray-200 bg-slate-50/50 p-4 flex items-center justify-between group transition-all hover:border-gray-300">
+
+      {/* Show single file view if non-multiple and has a file */}
+      {files.length > 0 && !multiple ? (
+        <div className="border border-[#e2e8f0] bg-white p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="bg-white p-2 border border-gray-100 shadow-sm rounded">
-              <FileText className="h-5 w-5 text-[#d51900]" />
+            <div className="h-8 w-8 rounded bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+              <FileText className="h-4 w-4 text-primary" />
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-[#334155] truncate leading-tight">{file.name}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-[#94a3b8] mt-0.5">
-                {(file.size / (1024 * 1024)).toFixed(2)} MB • READY
+            <div className="min-w-0 flex flex-col">
+              <span className="text-sm font-semibold text-slate-700 truncate">{files[0].name}</span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                {(files[0].size / 1024).toFixed(1)} KB
               </span>
             </div>
           </div>
           <button
-            onClick={() => onFileSelect(null)}
-            className="p-1.5 hover:bg-red-50 hover:text-red-600 transition-colors text-slate-400 group-hover:text-slate-600 border border-transparent hover:border-red-100 rounded"
+            onClick={clearFiles}
+            className="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-red-500 transition-colors rounded-full"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
       ) : (
-        <label
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragOver(true);
-          }}
-          onDragLeave={() => setIsDragOver(false)}
-          onDrop={handleDrop}
-          className={`border-2 border-dashed h-[160px] flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ${
-            isDragOver
-              ? "border-[#d51900] bg-red-50/10 shadow-inner"
-              : "border-gray-200 hover:border-[#d51900]/50 hover:bg-red-50/5 bg-white"
-          }`}
-        >
-          <Upload className="h-7 w-7 text-slate-300 mb-3" />
-          <div className="text-center">
-            <span className="text-[15px] text-[#334155] block font-medium">
-              Drag & drop or <span className="underline decoration-slate-300 underline-offset-4 hover:text-[#d51900] transition-colors">browse</span>
+        <div className="space-y-4">
+          <label
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ${isDragOver
+              ? "border-primary bg-primary/5 shadow-inner scale-[0.99]"
+              : "border-slate-200 hover:border-primary/40 bg-white hover:bg-slate-50/50"
+              }`}
+          >
+            <Upload className={`h-6 w-6 text-muted-foreground mb-2 ${isDragOver ? 'text-primary' : ''}`} />
+            <span className="text-sm text-muted-foreground">
+              {multiple && files.length > 0 ? "Add more files" : <>Drag & drop or <span className="underline">browse</span></>}
             </span>
-            <span className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-widest mt-2 block">
-              PDF / PNG / JPEG / TIFF
-            </span>
-          </div>
-          <input
-            type="file"
-            accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif"
-            onChange={handleChange}
-            className="hidden"
-          />
-        </label>
+            <span className="text-xs text-muted-foreground mt-1">PDF / PNG / JPEG / TIFF</span>
+            <input
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif"
+              onChange={handleChange}
+              multiple={multiple}
+              className="hidden"
+            />
+          </label>
+
+          {/* List of files for multiple mode */}
+          {multiple && files.length > 0 && (
+            <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+              {files.map((f, idx) => (
+                <div key={`${f.name}-${idx}`} className="border border-slate-100 bg-white p-3 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-semibold text-slate-700 truncate">{f.name}</div>
+                      <div className="text-[10px] text-slate-400">{(f.size / 1024).toFixed(1)} KB</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeFile(idx)}
+                    className="p-1 hover:bg-slate-50 text-slate-300 hover:text-red-500 transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

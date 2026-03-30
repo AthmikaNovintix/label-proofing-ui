@@ -75,7 +75,7 @@ const InspectionSummary = ({ items, formData }: { items: DiscrepancyItem[]; form
   return (
     <div className="bg-card border border-border">
       <div className="bg-secondary/50 px-4 py-2 border-b border-border">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspection Summary</span>
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Inspection Summary</span>
       </div>
       <div className="px-4 py-3 space-y-3">
         <div className="text-sm">
@@ -266,10 +266,16 @@ const StatusGroup = ({ status, items, showValidity }: { status: Status; items: D
   );
 };
 
-const DiscrepancyDashboard = ({ formData }: { formData?: FormDataContext }) => {
+const DiscrepancyDashboard = ({ formData, passedDiscrepancies }: { formData?: FormDataContext, passedDiscrepancies?: DiscrepancyItem[] }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const grouped: Record<Status, DiscrepancyItem[]> = { Deleted: [], Added: [], Modified: [], Repositioned: [] };
-  discrepancies.forEach((item) => grouped[item.status].push(item));
+  
+  const displayItems = passedDiscrepancies || discrepancies;
+  displayItems.forEach((item) => {
+    if (grouped[item.status as Status]) {
+      grouped[item.status as Status].push(item);
+    }
+  });
 
   return (
     <div className="space-y-4">
@@ -321,7 +327,7 @@ const DiscrepancyDashboard = ({ formData }: { formData?: FormDataContext }) => {
       <InspectionSummary items={discrepancies} formData={formData} />
       <div className="bg-card border border-border">
         <div className="bg-secondary/50 px-4 py-2 border-b border-border">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspection Details</span>
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Inspection Details</span>
         </div>
         <div className="px-4 py-3 divide-y divide-border">
           {formData && (

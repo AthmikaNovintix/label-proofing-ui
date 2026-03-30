@@ -1,5 +1,7 @@
 import DiscrepancyDashboard from "@/components/DiscrepancyDashboard";
 
-const DataTables = ({ formData }: { formData?: any }) => <DiscrepancyDashboard formData={formData} />;
+const DataTables = ({ formData, discrepancies }: { formData?: any, discrepancies?: any[] }) => (
+  <DiscrepancyDashboard formData={formData} passedDiscrepancies={discrepancies} />
+);
 
 export default DataTables;

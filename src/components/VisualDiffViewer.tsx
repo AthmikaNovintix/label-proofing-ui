@@ -47,7 +47,7 @@ export const PLACEHOLDER_LABEL_CHILD = "data:image/svg+xml," + encodeURIComponen
   <text x="400" y="570" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="10">NEW VERSION LABEL — Rev. 05 — 2025-03-01</text>
 </svg>`);
 
-const VisualDiffViewer = () => {
+const VisualDiffViewer = ({ baseImage, childImage }: { baseImage?: string; childImage?: string }) => {
   const baseRef = useRef<any>(null);
   const childRef = useRef<any>(null);
 
@@ -67,9 +67,10 @@ const VisualDiffViewer = () => {
   }, []);
 
   return (
-    <div>
+    <div className="border border-border bg-white">
+
       {/* Toolbar */}
-      <div className="flex items-center justify-between border border-border bg-card px-4 py-2 mb-0">
+      <div className="flex items-center justify-between bg-white border-b border-border px-4 py-2.5">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Visual Diff Viewer
         </span>
@@ -86,37 +87,51 @@ const VisualDiffViewer = () => {
         </div>
       </div>
 
-      {/* Split view */}
-      <div className="grid grid-cols-2 gap-4 border border-t-0 border-border">
-        <div className="border-r border-border">
-          <div className="bg-card px-3 py-1.5 border-b border-border">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Version Label</span>
-          </div>
-          <div className="bg-secondary/50 h-[400px] overflow-hidden">
-            <TransformWrapper ref={baseRef} minScale={0.5} maxScale={4} initialScale={1}>
-              <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <img src={PLACEHOLDER_LABEL_BASE} alt="Base pharmaceutical label" className="max-w-full max-h-full object-contain" />
-              </TransformComponent>
-            </TransformWrapper>
-          </div>
+      {/* Column header labels row */}
+      <div className="grid grid-cols-2 border-b border-border bg-white">
+        <div className="px-4 py-1.5 border-r border-border">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Current Version Label</span>
         </div>
-        <div>
-          <div className="bg-card px-3 py-1.5 border-b border-border">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">New Version Label</span>
-          </div>
-          <div className="bg-secondary/50 h-[400px] overflow-hidden">
-            <TransformWrapper ref={childRef} minScale={0.5} maxScale={4} initialScale={1}>
-              <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <img src={PLACEHOLDER_LABEL_CHILD} alt="Child pharmaceutical label" className="max-w-full max-h-full object-contain" />
-              </TransformComponent>
-            </TransformWrapper>
-          </div>
+        <div className="px-4 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">New Version Label</span>
+        </div>
+      </div>
+
+      {/* Image panels row — p-4 on both so images have equal padding from all edges */}
+      <div className="grid grid-cols-2">
+        <div className="border-r border-border bg-[#f1f5f9] h-[480px] overflow-hidden p-4">
+          <TransformWrapper ref={baseRef} minScale={0.5} maxScale={4} initialScale={1}>
+            <TransformComponent
+              wrapperStyle={{ width: "100%", height: "100%" }}
+              contentStyle={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <img
+                src={baseImage ? `data:image/png;base64,${baseImage}` : PLACEHOLDER_LABEL_BASE}
+                alt="Current version label"
+                className="max-w-full max-h-full object-contain"
+              />
+            </TransformComponent>
+          </TransformWrapper>
+        </div>
+        <div className="bg-[#f1f5f9] h-[480px] overflow-hidden p-4">
+          <TransformWrapper ref={childRef} minScale={0.5} maxScale={4} initialScale={1}>
+            <TransformComponent
+              wrapperStyle={{ width: "100%", height: "100%" }}
+              contentStyle={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <img
+                src={childImage ? `data:image/png;base64,${childImage}` : PLACEHOLDER_LABEL_CHILD}
+                alt="New version label"
+                className="max-w-full max-h-full object-contain"
+              />
+            </TransformComponent>
+          </TransformWrapper>
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 border border-t-0 border-border bg-card px-4 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-2">Legend:</span>
+      <div className="flex items-center gap-6 border-t border-border bg-white px-4 py-2.5">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mr-1">Legend:</span>
         <LegendItem color="bg-status-added" label="Added" />
         <LegendItem color="bg-status-deleted" label="Deleted" />
         <LegendItem color="bg-status-modified" label="Modified" />
