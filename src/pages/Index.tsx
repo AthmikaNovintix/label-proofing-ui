@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Dropzone from "@/components/Dropzone";
 import VisualDiffViewer from "@/components/VisualDiffViewer";
 import DataTables from "@/components/DataTables";
-import StepIndicator from "@/components/StepIndicator";
 import ProfileDropdown from "@/components/ProfileDropdown";
 
 const Index = () => {
@@ -33,9 +32,6 @@ const Index = () => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="hidden md:block">
-            <StepIndicator current={formData ? 3 : 1} />
-          </div>
           <ProfileDropdown />
         </div>
       </nav>
@@ -65,26 +61,24 @@ const Index = () => {
       )}
 
       <main className="flex w-full flex-1 min-h-0 bg-slate-50 flex-col overflow-y-auto">
-        {/* Upload Section (if no files passed and not submitted) */}
-        {!analysisRun && (
-          <section className="p-8 max-w-5xl mx-auto w-full mt-6 bg-white border border-gray-200 shadow-sm rounded-sm">
-            <div className="grid grid-cols-2 gap-6">
-              <Dropzone label="Upload Current Version Label (PDF / Image)" file={baseFile} onFileSelect={setBaseFile} />
-              <Dropzone label="Upload New Version Label" file={childFile} onFileSelect={setChildFile} />
+        {/* Upload Section (Always visible for easy re-analysis) */}
+        <section className="px-8 py-6 w-full bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 gap-8">
+              <Dropzone label="UPLOAD CURRENT VERSION LABEL (PDF / IMAGE)" file={baseFile} onFileSelect={setBaseFile} />
+              <Dropzone label="UPLOAD NEW VERSION LABEL" file={childFile} onFileSelect={setChildFile} />
             </div>
             <div className="mt-6 flex justify-center">
               <button
                 onClick={() => setAnalysisRun(true)}
                 disabled={!baseFile || !childFile}
-                className={`flex items-center justify-center gap-2 px-8 py-3.5 text-[14px] font-bold uppercase tracking-widest transition-all ${
-                  (baseFile && childFile) ? "bg-primary text-white hover:opacity-90 shadow-sm" : "bg-[#f1f5f9] text-[#94a3b8] cursor-not-allowed border border-[#e2e8f0]"
-                }`}
+                className={`flex items-center justify-center gap-2 px-10 py-3 text-[15px] font-bold uppercase tracking-widest transition-all shadow-md bg-[#d51900] text-white hover:bg-[#b01300] hover:shadow-lg active:scale-[0.98] cursor-pointer`}
               >
                 {formData ? "RUN PROOFING ANALYSIS" : "RUN COMPARATOR ANALYSIS"}
               </button>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         {analysisRun && (
           <>
@@ -94,7 +88,7 @@ const Index = () => {
             </section>
 
             {/* Data Tables */}
-            <section className="p-8">
+            <section className="px-8 py-4">
               <DataTables formData={formData} />
             </section>
           </>
